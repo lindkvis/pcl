@@ -50,17 +50,16 @@ namespace pcl
   {
 
 
-    template<class T> int SparseMatrix<T>::UseAlloc=0;
-    template<class T> Allocator<MatrixEntry<T> > SparseMatrix<T>::internalAllocator;
-    template<class T> int SparseMatrix<T>::UseAllocator(void){return UseAlloc;}
+    template<class T> boost::thread_specific_ptr< Allocator<MatrixEntry<T> > > SparseMatrix<T>::internalAllocator;
+    template<class T> int SparseMatrix<T>::UseAllocator(void){return !!internalAllocator.get();}
     template<class T>
     void SparseMatrix<T>::SetAllocator( int blockSize )
     {
       if(blockSize>0){
-        UseAlloc=1;
-        internalAllocator.set(blockSize);
+	internalAllocator.reset(new Allocator< MatrixEntry<T> >);
+        internalAllocator->set(blockSize);
       }
-      else{UseAlloc=0;}
+      else{internalAllocator.reset();}
     }
     ///////////////////////////////////////
     // SparseMatrix Methods and Memebers //
@@ -163,7 +162,7 @@ namespace pcl
       if( rows>0 )
       {
 
-        if( !UseAlloc )
+        if( !UseAllocator() )
           if( _contiguous ){ if( _maxEntriesPerRow ) free( m_ppElements[0] ); }
           else for( int i=0 ; i<rows ; i++ ){ if( rowSizes[i] ) free( m_ppElements[i] ); }
         free( m_ppElements );
@@ -184,7 +183,7 @@ namespace pcl
     {
       if( rows>0 )
       {
-        if( !UseAlloc )
+        if( !UseAllocator() )
           if( _contiguous ){ if( _maxEntriesPerRow ) free( m_ppElements[0] ); }
           else for( int i=0 ; i<rows ; i++ ){ if( rowSizes[i] ) free( m_ppElements[i] ); }
         free( m_ppElements );
@@ -213,7 +212,7 @@ namespace pcl
       }
       else if( row>=0 && row<rows )
       {
-        if( UseAlloc ) m_ppElements[row] = internalAllocator.newElements(count);
+        if( UseAllocator() ) m_ppElements[row] = internalAllocator->newElements(count);
         else
         {
           if( rowSizes[row] ) free( m_ppElements[row] );

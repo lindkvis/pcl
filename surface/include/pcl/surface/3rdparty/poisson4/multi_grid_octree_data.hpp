@@ -472,7 +472,7 @@ namespace pcl
     //////////////////
     // TreeNodeData //
     //////////////////
-    int TreeNodeData::UseIndex=1;
+    THREAD_LOCAL int TreeNodeData::UseIndex=1;
     TreeNodeData::TreeNodeData( void )
     {
       if( UseIndex )
@@ -1878,7 +1878,7 @@ namespace pcl
         if( subdivideDepth>0 ) iter += SolveFixedDepthMatrix( i , _sNodes , &metSolution[0] , subdivideDepth , showResidual , minIters , accuracy );
         else                   iter += SolveFixedDepthMatrix( i , _sNodes , &metSolution[0] ,                  showResidual , minIters , accuracy );
       }
-      SparseMatrix< float >::internalAllocator.reset();
+      SparseMatrix< float >::internalAllocator->reset();
       fData.clearDotTables( fData.VV_DOT_FLAG | fData.DV_DOT_FLAG | fData.DD_DOT_FLAG );
 
       return iter;
@@ -1908,7 +1908,7 @@ namespace pcl
         SetCoarserPointValues( depth , sNodes , metSolution );
       }
 
-      SparseSymmetricMatrix< Real >::internalAllocator.rollBack();
+      SparseSymmetricMatrix< Real >::internalAllocator->rollBack();
       {
         int maxECount = ( (2*Degree+1)*(2*Degree+1)*(2*Degree+1) + 1 ) / 2;
         maxECount = ( ( maxECount + 15 ) / 16 ) * 16;
@@ -1918,7 +1918,7 @@ namespace pcl
 
       {
         // Get the system matrix
-        SparseSymmetricMatrix< Real >::internalAllocator.rollBack();
+        SparseSymmetricMatrix< Real >::internalAllocator->rollBack();
         GetFixedDepthLaplacian( M , depth , sNodes , metSolution );
         // Set the constraint vector
         B.Resize( sNodes.nodeCount[depth+1]-sNodes.nodeCount[depth] );
@@ -2035,7 +2035,7 @@ namespace pcl
           X_[j] = sNodes.treeNodes[ asf.adjacencies[j] ]->nodeData.solution;
         }
         // Get the associated matrix
-        SparseSymmetricMatrix< Real >::internalAllocator.rollBack();
+        SparseSymmetricMatrix< Real >::internalAllocator->rollBack();
         GetRestrictedFixedDepthLaplacian( _M , depth , asf.adjacencies , asf.adjacencyCount , sNodes.treeNodes[i] , myRadius , sNodes , metSolution );
 #pragma omp parallel for num_threads( threads ) schedule( static )
         for( j=0 ; j<asf.adjacencyCount ; j++ )

@@ -47,21 +47,20 @@ namespace pcl
     template<class NodeData,class Real> const int OctNode<NodeData,Real>::OffsetShift2=OffsetShift1+OffsetShift;
     template<class NodeData,class Real> const int OctNode<NodeData,Real>::OffsetShift3=OffsetShift2+OffsetShift;
 
-    template<class NodeData,class Real> int OctNode<NodeData,Real>::UseAlloc=0;
-    template<class NodeData,class Real> Allocator<OctNode<NodeData,Real> > OctNode<NodeData,Real>::internalAllocator;
+    template<class NodeData,class Real> boost::thread_specific_ptr< Allocator<OctNode<NodeData,Real> > > OctNode<NodeData,Real>::internalAllocator;
 
     template<class NodeData,class Real>
     void OctNode<NodeData,Real>::SetAllocator(int blockSize)
     {
       if(blockSize>0)
       {
-        UseAlloc=1;
-        internalAllocator.set(blockSize);
+	internalAllocator.reset(new Allocator<OctNode<NodeData,Real> >);
+        internalAllocator->set(blockSize);
       }
-      else{UseAlloc=0;}
+      else{internalAllocator.reset();}
     }
     template<class NodeData,class Real>
-    int OctNode<NodeData,Real>::UseAllocator(void){return UseAlloc;}
+    int OctNode<NodeData,Real>::UseAllocator(void){return !!internalAllocator.get(); }
 
     template <class NodeData,class Real>
     OctNode<NodeData,Real>::OctNode(void){
@@ -71,7 +70,7 @@ namespace pcl
 
     template <class NodeData,class Real>
     OctNode<NodeData,Real>::~OctNode(void){
-      if(!UseAlloc){if(children){delete[] children;}}
+      if(!UseAllocator()){if(children){delete[] children;}}
       parent=children=NULL;
     }
     template <class NodeData,class Real>
@@ -87,7 +86,7 @@ namespace pcl
     int OctNode<NodeData,Real>::initChildren(void){
       int i,j,k;
 
-      if(UseAlloc){children=internalAllocator.newElements(8);}
+      if(UseAllocator()){children=internalAllocator->newElements(8);}
       else{
         if(children){delete[] children;}
         children=NULL;

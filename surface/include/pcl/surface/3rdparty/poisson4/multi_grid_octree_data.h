@@ -173,7 +173,7 @@ namespace pcl
     class TreeNodeData
     {
       public:
-        static int UseIndex;
+        static THREAD_LOCAL int UseIndex;
         int nodeIndex;
         union
         {

@@ -33,6 +33,8 @@ DAMAGE.
 #  pragma GCC system_header
 #endif
 
+#include <boost/thread/tss.hpp>
+
 #include "vector.h"
 #include "allocator.h"
 
@@ -55,9 +57,8 @@ namespace pcl
       private:
         bool _contiguous;
         int _maxEntriesPerRow;
-        static int UseAlloc;
       public:
-        static Allocator<MatrixEntry<T> > internalAllocator;
+        static boost::thread_specific_ptr< Allocator<MatrixEntry<T> > > internalAllocator;
         static int UseAllocator(void);
         static void SetAllocator( int blockSize );
 

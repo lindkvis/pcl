@@ -33,6 +33,8 @@ DAMAGE.
 #  pragma GCC system_header
 #endif
 
+#include <boost/thread/tss.hpp>
+
 #include "allocator.h"
 #include "binary_node.h"
 #include "marching_cubes_poisson.h"
@@ -48,8 +50,6 @@ namespace pcl
     class OctNode
     {
       private:
-        static int UseAlloc;
-
         class AdjacencyCountFunction
         {
           public:
@@ -85,7 +85,7 @@ namespace pcl
         static const int DepthShift,OffsetShift,OffsetShift1,OffsetShift2,OffsetShift3;
         static const int DepthMask,OffsetMask;
 
-        static Allocator<OctNode> internalAllocator;
+      static boost::thread_specific_ptr< Allocator<OctNode> > internalAllocator;
         static int UseAllocator(void);
         static void SetAllocator(int blockSize);
 
