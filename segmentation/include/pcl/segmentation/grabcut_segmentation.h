@@ -40,6 +40,8 @@
 #ifndef PCL_SEGMENTATION_GRABCUT
 #define PCL_SEGMENTATION_GRABCUT
 
+#include <deque>
+
 #include <pcl/point_cloud.h>
 #include <pcl/pcl_base.h>
 #include <pcl/point_types.h>
