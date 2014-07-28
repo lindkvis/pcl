@@ -255,7 +255,7 @@ int main(int argc, char ** argv)
   {
     for (boost::filesystem::directory_iterator itr(rgb_path_); itr != end_itr; ++itr)
     {
-      std::string ext = itr->path().extension().string();
+      std::string ext = pcl::io::boost_path_to_string(itr->path().extension());
       if(ext.compare(".tiff") == 0)
       {
         tiff_rgb_files.push_back (itr->path ().string ());
@@ -297,7 +297,7 @@ int main(int argc, char ** argv)
   {
     for (boost::filesystem::directory_iterator itr(depth_path_); itr != end_itr; ++itr)
     {
-      std::string ext = itr->path().extension().string();
+      std::string ext = pcl::io::boost_path_to_string(itr->path().extension());
       if(ext.compare(".tiff") == 0)
       {
         tiff_depth_files.push_back (itr->path ().string ());
@@ -355,7 +355,7 @@ int main(int argc, char ** argv)
       // Find the correct file name
       for(size_t j = 0; j < tiff_depth_paths.size(); j++)
       {
-        std::string depth_filename = tiff_depth_paths[i].filename().string();
+        std::string depth_filename = pcl::io::boost_path_to_string(tiff_depth_paths[i].filename());
         std::string depth_time = depth_filename.substr(6,22);
 
         if(depth_time.compare(rgb_time) == 0) // found the correct depth

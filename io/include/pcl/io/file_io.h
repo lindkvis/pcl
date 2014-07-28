@@ -459,6 +459,30 @@ namespace pcl
       */
     PCL_EXPORTS int
     save (const std::string &file_name, const pcl::PolygonMesh &mesh, unsigned precision = 5);
+    
+    /** \brief Converts a boost file system path to string.
+     *
+     * Used to allow the code to compile on boost version > 1.49 
+     * from which several boost filesystem functions changed to return a path object.
+     * 
+     * \param[in] path The boost file system path
+     * \return path string
+     * \ingroup io
+     */
+    PCL_EXPORTS std::string
+    boost_path_to_string (const boost::filesystem::path& path);
+
+    /** \brief Dummy overload to convert string to string.
+     *
+     * Used to allow the code to compile on boost version <= 1.49
+     * when several boost filesystem functions returned a string.
+     *
+     * \param[in] path The file system path as a std::string
+     * \return path string
+     * \ingroup io
+     */
+    PCL_EXPORTS std::string
+    boost_path_to_string (const std::string& path);
   }
 }
 

@@ -51,7 +51,7 @@ namespace pcl
     load (const std::string& file_name, pcl::PointCloud<PointT>& cloud)
     {
       boost::filesystem::path p (file_name.c_str ());
-      std::string extension = p.extension ().string ();
+      std::string extension = boost_path_to_string(p.extension ());
       int result = -1;
       if (extension == ".pcd")
         result = pcl::io::loadPCDFile (file_name, cloud);
@@ -71,7 +71,7 @@ namespace pcl
     save (const std::string& file_name, const pcl::PointCloud<PointT>& cloud)
     {
       boost::filesystem::path p (file_name.c_str ());
-      std::string extension = p.extension ().string ();
+      std::string extension = boost_path_to_string(p.extension ());
       int result = -1;
       if (extension == ".pcd")
         result = pcl::io::savePCDFile (file_name, cloud, true);
@@ -93,7 +93,7 @@ int
 pcl::io::load (const std::string& file_name, pcl::PCLPointCloud2& blob)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ());
   int result = -1;
   if (extension == ".pcd")
     result = pcl::io::loadPCDFile (file_name, blob);
@@ -115,7 +115,7 @@ int
 pcl::io::load (const std::string& file_name, pcl::PolygonMesh& mesh)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ().string ());
   int result = -1;
   if (extension == ".ply")
     result = pcl::io::loadPLYFile (file_name, mesh);
@@ -135,7 +135,7 @@ int
 pcl::io::load (const std::string& file_name, pcl::TextureMesh& mesh)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ().string ());
   int result = -1;
   if (extension == ".obj")
     result = pcl::io::loadOBJFile (file_name, mesh);
@@ -151,7 +151,7 @@ int
 pcl::io::save (const std::string& file_name, const pcl::PCLPointCloud2& blob, unsigned precision)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ().string ());
   int result = -1;
   if (extension == ".pcd")
   {
@@ -181,7 +181,7 @@ int
 pcl::io::save (const std::string &file_name, const pcl::TextureMesh &tex_mesh, unsigned precision)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ());;
   int result = -1;
   if (extension == ".obj")
     result = pcl::io::saveOBJFile (file_name, tex_mesh, precision);
@@ -197,7 +197,7 @@ int
 pcl::io::save (const std::string &file_name, const pcl::PolygonMesh &poly_mesh, unsigned precision)
 {
   boost::filesystem::path p (file_name.c_str ());
-  std::string extension = p.extension ().string ();
+  std::string extension = boost_path_to_string(p.extension ());
   int result = -1;
   if (extension == ".ply")
     result = pcl::io::savePLYFileBinary (file_name, poly_mesh);
@@ -211,4 +211,16 @@ pcl::io::save (const std::string &file_name, const pcl::PolygonMesh &poly_mesh, 
     result = -1;
   }
   return (result);
+}
+
+std::string 
+pcl::io::boost_path_to_string(const std::string& path)
+{
+  return path;
+}
+
+std::string 
+pcl::io::boost_path_to_string(const boost::filesystem::path& path)
+{
+  return path.string();
 }
