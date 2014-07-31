@@ -52,16 +52,15 @@ namespace pcl
     ///////////////////////////////////////////
     // Static Allocator Methods and Memebers //
     ///////////////////////////////////////////
-    template<class T> int SparseMatrix<T>::UseAlloc=0;
-    template<class T> Allocator<MatrixEntry<T> > SparseMatrix<T>::AllocatorMatrixEntry;
-    template<class T> int SparseMatrix<T>::UseAllocator(void){return UseAlloc;}
+    template<class T> boost::thread_specific_ptr< Allocator<MatrixEntry<T> > > SparseMatrix<T>::AllocatorMatrixEntry;
+    template<class T> int SparseMatrix<T>::UseAllocator(void){!!AllocatorMatrixEntry.get(); }
     template<class T>
     void SparseMatrix<T>::SetAllocator(const int& blockSize){
       if(blockSize>0){
-        UseAlloc=1;
-        AllocatorMatrixEntry.set(blockSize);
+        AllocatorMatrixEntry.reset(new Allocator< MatrixEntry<T> >);
+        AllocatorMatrixEntry->set(blockSize);
       }
-      else{UseAlloc=0;}
+      else{AllocatorMatrixEntry.reset();}
     }
     ///////////////////////////////////////
     // SparseMatrix Methods and Memebers //
@@ -127,7 +126,7 @@ namespace pcl
     {
       int i;
       if(rows>0){
-        if(!UseAlloc){for(i=0;i<rows;i++){if(rowSizes[i]){free(m_ppElements[i]);}}}
+        if(!UseAllocator()){for(i=0;i<rows;i++){if(rowSizes[i]){free(m_ppElements[i]);}}}
         free(m_ppElements);
         free(rowSizes);
       }
@@ -148,8 +147,8 @@ namespace pcl
     {
       if (row >= 0 && row < rows)
       {
-        if (UseAlloc)
-          m_ppElements[row] = AllocatorMatrixEntry.newElements (count);
+        if (UseAllocator())
+          m_ppElements[row] = AllocatorMatrixEntry->newElements (count);
         else
         {
           if (rowSizes[row])
@@ -345,9 +344,8 @@ namespace pcl
     ///////////////////////////////////////////
     // Static Allocator Methods and Memebers //
     ///////////////////////////////////////////
-    template<class T,int Dim> int SparseNMatrix<T,Dim>::UseAlloc=0;
-    template<class T,int Dim> Allocator<NMatrixEntry<T,Dim> > SparseNMatrix<T,Dim>::AllocatorNMatrixEntry;
-    template<class T,int Dim> int SparseNMatrix<T,Dim>::UseAllocator(void){return UseAlloc;}
+    template<class T,int Dim> boost::thread_specific_ptr< Allocator<NMatrixEntry<T,Dim> > > SparseNMatrix<T,Dim>::AllocatorNMatrixEntry;
+    template<class T,int Dim> int SparseNMatrix<T,Dim>::UseAllocator(void){!!AllocatorNMatrixEntry.get();}
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class T,int Dim> void 
@@ -355,11 +353,11 @@ namespace pcl
     {
       if (blockSize>0)
       {
-        UseAlloc = 1;
-        AllocatorNMatrixEntry.set (blockSize);
+        AllocatorNMatrixEntry.reset(new Allocator<NMatrixEntry<T,Dim> >);
+        AllocatorNMatrixEntry->set (blockSize);
       }
       else
-        UseAlloc = 0;
+        AllocatorNMatrixEntry.reset();
     }
     ////////////////////////////////////////
     // SparseNMatrix Methods and Memebers //
@@ -428,7 +426,7 @@ namespace pcl
       int i;
       if (rows > 0)
       {
-        if (!UseAlloc)
+        if (!UseAllocator())
           for (i = 0; i < rows; i++)
             if (rowSizes[i])
               free (m_ppElements[i]);
@@ -450,7 +448,7 @@ namespace pcl
     {
       if (row >= 0 && row < rows)
       {
-        if (UseAlloc)
+        if (UseAllocator())
           m_ppElements[row] = AllocatorNMatrixEntry.newElements (count);
         else
         {

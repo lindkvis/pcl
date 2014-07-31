@@ -42,6 +42,8 @@
 #ifndef PCL_POISSON_SPARSE_MATRIX_H_
 #define PCL_POISSON_SPARSE_MATRIX_H_
 
+#include <boost/thread/tss.hpp>
+
 #include "vector.h"
 #include "allocator.h"
 
@@ -69,10 +71,8 @@ namespace pcl
 
     template<class T> class SparseMatrix
     {
-      private:
-        static int UseAlloc;
       public:
-        static Allocator<MatrixEntry<T> > AllocatorMatrixEntry;
+        static boost::thread_specific_ptr< Allocator<MatrixEntry<T> > > AllocatorMatrixEntry;
         static int UseAllocator (void);
         static void SetAllocator (const int& blockSize);
 
@@ -130,10 +130,8 @@ namespace pcl
 
     template<class T,int Dim> class SparseNMatrix
     {
-      private:
-        static int UseAlloc;
       public:
-        static Allocator<NMatrixEntry<T,Dim> > AllocatorNMatrixEntry;
+        static  boost::thread_specific_ptr< Allocator<NMatrixEntry<T,Dim> > > AllocatorNMatrixEntry;
         static int UseAllocator (void);
         static void SetAllocator (const int& blockSize);
 

@@ -103,7 +103,7 @@ namespace pcl
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    int TreeNodeData::UseIndex = 1;
+    THREAD_LOCAL int TreeNodeData::UseIndex = 1;
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     TreeNodeData::TreeNodeData () : value (0)
@@ -811,7 +811,7 @@ namespace pcl
           iter += SolveFixedDepthMatrix (i, sNodes);
       }
 
-      SparseMatrix<float>::AllocatorMatrixEntry.reset ();
+      SparseMatrix<float>::AllocatorMatrixEntry->reset ();
       fData.clearDotTables (fData.DOT_FLAG | fData.D_DOT_FLAG | fData.D2_DOT_FLAG);
       return iter;
     }
@@ -831,7 +831,7 @@ namespace pcl
       V.Resize (sNodes.nodeCount[depth + 1] - sNodes.nodeCount[depth]);
       for (i = sNodes.nodeCount[depth]; i < sNodes.nodeCount[depth + 1]; i++)
         V[i - sNodes.nodeCount[depth]] = sNodes.treeNodes[i]->nodeData.value;
-      SparseSymmetricMatrix<float>::AllocatorMatrixEntry.rollBack ();
+      SparseSymmetricMatrix<float>::AllocatorMatrixEntry->rollBack ();
       GetFixedDepthLaplacian (matrix, depth, sNodes);
       iter += SparseSymmetricMatrix<Real>::Solve (matrix, V, int (pow (matrix.rows, ITERATION_POWER)), Solution, double (EPSILON), 1);
 
@@ -998,7 +998,7 @@ namespace pcl
         for (j = 0; j < asf.adjacencyCount; j++)
           SubSolution[j] = sNodes.treeNodes[asf.adjacencies[j]]->nodeData.value;
         // Get the associated matrix
-        SparseSymmetricMatrix<float>::AllocatorMatrixEntry.rollBack ();
+        SparseSymmetricMatrix<float>::AllocatorMatrixEntry->rollBack ();
         GetRestrictedFixedDepthLaplacian (matrix, depth, asf.adjacencies, asf.adjacencyCount, sNodes.treeNodes[i], myRadius, sNodes);
 
         // Solve the matrix
