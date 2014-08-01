@@ -359,6 +359,16 @@ log2f (float x)
   #define MALLOC_ALIGNED 0
 #endif
 
+// different ways of implementing thread local storage
+#if defined(_MSC_VER) || (defined(__INTEL_COMPILER) && defined(_WIN32))
+#define THREAD_LOCAL __declspec(thread)
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER)
+#define THREAD_LOCAL __thread
+#else
+  // default does nothing
+#define THREAD_LOCAL
+#endif
+
 inline void*
 aligned_malloc (size_t size)
 {
