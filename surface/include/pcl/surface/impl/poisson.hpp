@@ -114,7 +114,7 @@ pcl::Poisson<PointNT>::execute (poisson::CoredMeshData &mesh,
 
   tree.setTree (input_, depth_, kernel_depth_, float (samples_per_node_), scale_, center, scale, !no_reset_samples_, confidence_);
 
-  printf ("scale after settree %f\n", scale);
+  //  printf ("scale after settree %f\n", scale);
 
   if(!no_clip_tree_)
   {

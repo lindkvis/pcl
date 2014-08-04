@@ -43,6 +43,8 @@
 #define PCL_POISSON_MARCHING_CUBES_POISSON_H_
 
 #include <vector>
+#include <boost/thread/tss.hpp>
+
 #include "geometry.h"
 
 
@@ -91,6 +93,12 @@ namespace pcl {
       static void EdgeCorners (const int& idx, int& c1, int &c2);
       static void FaceCorners (const int& idx, int& c1, int &c2, int& c3, int& c4);
     };
+ 
+    template<size_t N, size_t M>
+    struct VertexList
+    {
+      double vertexList[N][M];
+    };
 
     class MarchingSquares
     {
@@ -100,7 +108,7 @@ namespace pcl {
       const static int MAX_EDGES = 2;
       static const int edgeMask[1<<Square::CORNERS];
       static const int edges[1<<Square::CORNERS][2*MAX_EDGES+1];
-      static double vertexList[Square::EDGES][2];
+      static boost::thread_specific_ptr< VertexList<Square::EDGES, 2> > vertexList;
 
       static int GetIndex (const double values[Square::CORNERS], const double& iso);
       static int IsAmbiguous (const double v[Square::CORNERS] ,const double& isoValue);
@@ -124,7 +132,7 @@ namespace pcl {
       static const int edgeMask[1<<Cube::CORNERS];
       static const int triangles[1<<Cube::CORNERS][3*MAX_TRIANGLES+1];
       static const int cornerMap[Cube::CORNERS];
-      static double vertexList[Cube::EDGES][3];
+      static boost::thread_specific_ptr< VertexList<Cube::EDGES, 3> > vertexList;
 
       static int AddTriangleIndices (const int& mcIndex, int* triangles);
 

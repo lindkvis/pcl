@@ -345,7 +345,7 @@ namespace pcl
     // Static Allocator Methods and Memebers //
     ///////////////////////////////////////////
     template<class T,int Dim> boost::thread_specific_ptr< Allocator<NMatrixEntry<T,Dim> > > SparseNMatrix<T,Dim>::AllocatorNMatrixEntry;
-    template<class T,int Dim> int SparseNMatrix<T,Dim>::UseAllocator(void){!!AllocatorNMatrixEntry.get();}
+    template<class T,int Dim> int SparseNMatrix<T,Dim>::UseAllocator(void){return !!AllocatorNMatrixEntry.get();}
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class T,int Dim> void 

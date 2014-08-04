@@ -60,8 +60,7 @@ namespace pcl
     template<class NodeData, class Real> const int OctNode<NodeData, Real>::OffsetShift2 = OffsetShift1 + OffsetShift;
     template<class NodeData, class Real> const int OctNode<NodeData, Real>::OffsetShift3 = OffsetShift2 + OffsetShift;
 
-    template<class NodeData, class Real> int OctNode<NodeData, Real>::UseAlloc = 0;
-    template<class NodeData, class Real> Allocator<OctNode<NodeData, Real> > OctNode<NodeData, Real>::AllocatorOctNode;
+    template<class NodeData, class Real> boost::thread_specific_ptr< Allocator<OctNode<NodeData, Real> > > OctNode<NodeData, Real>::AllocatorOctNode;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class NodeData, class Real> void 
@@ -69,18 +68,18 @@ namespace pcl
     {
       if (blockSize > 0)
       {
-        UseAlloc = 1;
-        AllocatorOctNode.set (blockSize);
+	      AllocatorOctNode.reset(new Allocator<OctNode<NodeData, Real> >);
+        AllocatorOctNode->set (blockSize);
       }
       else
-        UseAlloc = 0;
+        AllocatorOctNode.reset();
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class NodeData, class Real> int 
     OctNode<NodeData, Real>::UseAllocator (void)
     {
-      return (UseAlloc);
+      return (!!AllocatorOctNode.get());
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +93,7 @@ namespace pcl
     template <class NodeData, class Real>
     OctNode<NodeData, Real>::~OctNode ()
     {
-      if (!UseAlloc)
+      if (!UseAllocator())
       {
         if (children)
         {
@@ -127,9 +126,9 @@ namespace pcl
     {
       int i, j, k;
 
-      if (UseAlloc)
+      if (UseAllocator())
       {
-        children = AllocatorOctNode.newElements (8);
+        children = AllocatorOctNode->newElements (8);
       }
       else
       {

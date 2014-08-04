@@ -1886,7 +1886,7 @@ namespace pcl
         values.clear ();
       }
       delete sNodes;
-      printf ("Memory Usage: %.3f MB\n", float (MemoryUsage ()));
+      //      printf ("Memory Usage: %.3f MB\n", float (MemoryUsage ()));
 
       if (subdivideDepth)
       {

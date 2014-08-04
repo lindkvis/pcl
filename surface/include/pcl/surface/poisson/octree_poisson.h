@@ -45,6 +45,8 @@
 #include "binary_node.h"
 #include "marching_cubes_poisson.h"
 
+#include <boost/thread/tss.hpp>
+
 #define DIMENSION 3
 
 namespace pcl 
@@ -56,8 +58,6 @@ namespace pcl
     class OctNode
     {
       private:
-        static int UseAlloc;
-
         class AdjacencyCountFunction
         {
           public:
@@ -119,7 +119,7 @@ namespace pcl
         static const int DepthShift,OffsetShift,OffsetShift1,OffsetShift2,OffsetShift3;
         static const int DepthMask,OffsetMask;
 
-        static Allocator<OctNode> AllocatorOctNode;
+        static boost::thread_specific_ptr< Allocator<OctNode> > AllocatorOctNode;
         static int UseAllocator (void);
         static void SetAllocator (int blockSize);
 

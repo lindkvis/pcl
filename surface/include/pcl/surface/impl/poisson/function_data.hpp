@@ -102,7 +102,7 @@ namespace pcl
       depth = maxDepth;
       res = BinaryNode<double>::CumulativeCenterCount (depth);
       res2 = (1<<(depth+1))+1;
-      baseFunctions = new PPolynomial<Degree+1>[res];
+      baseFunctions = boost::shared_array< PPolynomial<Degree+1> >(new PPolynomial<Degree+1>[res]);
       // Scale the function so that it has:
       // 0] Value 1 at 0
       // 1] Integral equal to 1

@@ -45,6 +45,8 @@
 
 #include "ppolynomial.h"
 
+#include <boost/shared_array.hpp>
+
 namespace pcl 
 {
   namespace poisson 
@@ -68,10 +70,10 @@ namespace pcl
         Real *valueTables, *dValueTables;
         PPolynomial<Degree> baseFunction;
         PPolynomial<Degree-1> dBaseFunction;
-        PPolynomial<Degree+1>* baseFunctions;
+        boost::shared_array< PPolynomial<Degree+1> > baseFunctions;
 
         FunctionData (void);
-        ~FunctionData (void);
+        virtual ~FunctionData (void);
 
         virtual void setDotTables (const int& flags);
         virtual void clearDotTables (const int& flags);

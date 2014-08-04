@@ -328,7 +328,7 @@ namespace pcl {
                                                                            { -1,  -1,  -1,  -1,  -1}, // (0,0) (1,0) (0,1) (1,1)
     };
 
-    double MarchingSquares::vertexList[Square::EDGES][2];
+    boost::thread_specific_ptr< VertexList<Square::EDGES, 2> > MarchingSquares::vertexList;
     int MarchingSquares::GetIndex(const double v[Square::CORNERS],const double& iso){
       int idx=0;
       for(int i=0;i<Square::CORNERS;i++){if(v[i]<iso){idx|=(1<<i);}}
@@ -342,11 +342,14 @@ namespace pcl {
     int MarchingSquares::AddEdges(const double v[Square::CORNERS],const double& iso,Edge* isoEdges){
       int idx,nEdges=0;
       Edge e;
-
       idx=GetIndex(v,iso);
 
       /* Cube is entirely in/out of the surface */
       if (!edgeMask[idx]) return 0;
+
+      if (!vertexList.get()) {
+	vertexList.reset(new VertexList<Square::EDGES, 2>);
+      }
 
       /* Find the vertices where the surface intersects the cube */
       int i,j,ii=1;
@@ -357,8 +360,8 @@ namespace pcl {
       /* Create the triangle */
       for (i=0;edges[idx][i]!=-1;i+=2) {
         for(j=0;j<2;j++){
-          e.p[0][j]=vertexList[edges[idx][i+0]][j];
-          e.p[1][j]=vertexList[edges[idx][i+1]][j];
+          e.p[0][j]=(*vertexList).vertexList[edges[idx][i+0]][j];
+          e.p[1][j]=(*vertexList).vertexList[edges[idx][i+1]][j];
         }
         isoEdges[nEdges++]=e;
       }
@@ -386,12 +389,12 @@ namespace pcl {
       Square::EdgeCorners(e,c1,c2);
       switch(o){
         case 0:
-          vertexList[e][0]=Interpolate(values[c1]-iso,values[c2]-iso);
-          vertexList[e][1]=i;
+          (*vertexList).vertexList[e][0]=Interpolate(values[c1]-iso,values[c2]-iso);
+          (*vertexList).vertexList[e][1]=i;
           break;
         case 1:
-          vertexList[e][1]=Interpolate(values[c1]-iso,values[c2]-iso);
-          vertexList[e][0]=i;
+          (*vertexList).vertexList[e][1]=Interpolate(values[c1]-iso,values[c2]-iso);
+          (*vertexList).vertexList[e][0]=i;
           break;
       }
     }
@@ -694,7 +697,8 @@ namespace pcl {
                                                                                {  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1}
     };
     const int MarchingCubes::cornerMap[Cube::CORNERS]={0,1,3,2,4,5,7,6};
-    double MarchingCubes::vertexList[Cube::EDGES][3];
+
+    boost::thread_specific_ptr< VertexList<Cube::EDGES, 3> > MarchingCubes::vertexList;
 
     int MarchingCubes::GetIndex(const double v[Cube::CORNERS],const double& iso){
       int idx=0;
@@ -750,18 +754,23 @@ namespace pcl {
       /* Cube is entirely in/out of the surface */
       if (!edgeMask[idx]) return 0;
 
+      if (!vertexList.get()) {
+	vertexList.reset(new VertexList<Cube::EDGES, 3>);
+      }
+
       /* Find the vertices where the surface intersects the cube */
       int i,j,ii=1;
       for(i=0;i<12;i++){
         if(edgeMask[idx] & ii){SetVertex(i,v,iso);}
         ii<<=1;
       }
+
       /* Create the triangle */
       for (i=0;triangles[idx][i]!=-1;i+=3) {
         for(j=0;j<3;j++){
-          tri.p[0][j]=vertexList[triangles[idx][i+0]][j];
-          tri.p[1][j]=vertexList[triangles[idx][i+1]][j];
-          tri.p[2][j]=vertexList[triangles[idx][i+2]][j];
+          tri.p[0][j]=(*vertexList).vertexList[triangles[idx][i+0]][j];
+          tri.p[1][j]=(*vertexList).vertexList[triangles[idx][i+1]][j];
+          tri.p[2][j]=(*vertexList).vertexList[triangles[idx][i+2]][j];
         }
         isoTriangles[ntriang++]=tri;
       }
@@ -789,51 +798,51 @@ namespace pcl {
       switch(e){
         case 0:
           t=Interpolate(values[Cube::CornerIndex(0,0,0)]-iso,values[Cube::CornerIndex(1,0,0)]-iso);
-          vertexList[e][0]=t;			vertexList[e][1]=0.0;		vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=t;			(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=0.0;
           break;
         case 1:
           t=Interpolate(values[Cube::CornerIndex(1,0,0)]-iso,values[Cube::CornerIndex(1,1,0)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=t;			vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=t;			(*vertexList).vertexList[e][2]=0.0;
           break;
         case 2:
           t=Interpolate(values[Cube::CornerIndex(1,1,0)]-iso,values[Cube::CornerIndex(0,1,0)]-iso);
-          vertexList[e][0]=(1.0-t);	vertexList[e][1]=1.0;		vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=(1.0-t);	(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=0.0;
           break;
         case 3:
           t=Interpolate(values[Cube::CornerIndex(0,1,0)]-iso,values[Cube::CornerIndex(0,0,0)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=(1.0-t);	vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=(1.0-t);	(*vertexList).vertexList[e][2]=0.0;
           break;
         case 4:
           t=Interpolate(values[Cube::CornerIndex(0,0,1)]-iso,values[Cube::CornerIndex(1,0,1)]-iso);
-          vertexList[e][0]=t;			vertexList[e][1]=0.0;		vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=t;			(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=1.0;
           break;
         case 5:
           t=Interpolate(values[Cube::CornerIndex(1,0,1)]-iso,values[Cube::CornerIndex(1,1,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=t;			vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=t;			(*vertexList).vertexList[e][2]=1.0;
           break;
         case 6:
           t=Interpolate(values[Cube::CornerIndex(1,1,1)]-iso,values[Cube::CornerIndex(0,1,1)]-iso);
-          vertexList[e][0]=(1.0-t);	vertexList[e][1]=1.0;		vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=(1.0-t);	(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=1.0;
           break;
         case 7:
           t=Interpolate(values[Cube::CornerIndex(0,1,1)]-iso,values[Cube::CornerIndex(0,0,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=(1.0-t);	vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=(1.0-t);	(*vertexList).vertexList[e][2]=1.0;
           break;
         case 8:
           t=Interpolate(values[Cube::CornerIndex(0,0,0)]-iso,values[Cube::CornerIndex(0,0,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=0.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 9:
           t=Interpolate(values[Cube::CornerIndex(1,0,0)]-iso,values[Cube::CornerIndex(1,0,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=0.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 10:
           t=Interpolate(values[Cube::CornerIndex(1,1,0)]-iso,values[Cube::CornerIndex(1,1,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=1.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 11:
           t=Interpolate(values[Cube::CornerIndex(0,1,0)]-iso,values[Cube::CornerIndex(0,1,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=1.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=t;
           break;
       };
     }
@@ -922,18 +931,23 @@ namespace pcl {
       /* Cube is entirely in/out of the surface */
       if (!edgeMask[idx]) return 0;
 
+      if (!vertexList.get()) {
+	vertexList.reset(new VertexList<Cube::EDGES, 3>);
+      }
+
       /* Find the vertices where the surface intersects the cube */
       int i,j,ii=1;
       for(i=0;i<12;i++){
         if(edgeMask[idx] & ii){SetVertex(i,v,iso);}
         ii<<=1;
       }
+
       /* Create the triangle */
       for (i=0;triangles[idx][i]!=-1;i+=3) {
         for(j=0;j<3;j++){
-          tri.p[0][j]=vertexList[triangles[idx][i+0]][j];
-          tri.p[1][j]=vertexList[triangles[idx][i+1]][j];
-          tri.p[2][j]=vertexList[triangles[idx][i+2]][j];
+          tri.p[0][j]=(*vertexList).vertexList[triangles[idx][i+0]][j];
+          tri.p[1][j]=(*vertexList).vertexList[triangles[idx][i+1]][j];
+          tri.p[2][j]=(*vertexList).vertexList[triangles[idx][i+2]][j];
         }
         isoTriangles[ntriang++]=tri;
       }
@@ -971,51 +985,51 @@ namespace pcl {
       switch(e){
         case 0:
           t=Interpolate(values[Cube::CornerIndex(0,0,0)]-iso,values[Cube::CornerIndex(1,0,0)]-iso);
-          vertexList[e][0]=t;			vertexList[e][1]=0.0;		vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=t;			(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=0.0;
           break;
         case 1:
           t=Interpolate(values[Cube::CornerIndex(1,0,0)]-iso,values[Cube::CornerIndex(1,1,0)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=t;			vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=t;			(*vertexList).vertexList[e][2]=0.0;
           break;
         case 2:
           t=Interpolate(values[Cube::CornerIndex(1,1,0)]-iso,values[Cube::CornerIndex(0,1,0)]-iso);
-          vertexList[e][0]=(1.0-t);	vertexList[e][1]=1.0;		vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=(1.0-t);	(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=0.0;
           break;
         case 3:
           t=Interpolate(values[Cube::CornerIndex(0,1,0)]-iso,values[Cube::CornerIndex(0,0,0)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=(1.0-t);	vertexList[e][2]=0.0;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=(1.0-t);	(*vertexList).vertexList[e][2]=0.0;
           break;
         case 4:
           t=Interpolate(values[Cube::CornerIndex(0,0,1)]-iso,values[Cube::CornerIndex(1,0,1)]-iso);
-          vertexList[e][0]=t;			vertexList[e][1]=0.0;		vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=t;			(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=1.0;
           break;
         case 5:
           t=Interpolate(values[Cube::CornerIndex(1,0,1)]-iso,values[Cube::CornerIndex(1,1,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=t;			vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=t;			(*vertexList).vertexList[e][2]=1.0;
           break;
         case 6:
           t=Interpolate(values[Cube::CornerIndex(1,1,1)]-iso,values[Cube::CornerIndex(0,1,1)]-iso);
-          vertexList[e][0]=(1.0-t);	vertexList[e][1]=1.0;		vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=(1.0-t);	(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=1.0;
           break;
         case 7:
           t=Interpolate(values[Cube::CornerIndex(0,1,1)]-iso,values[Cube::CornerIndex(0,0,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=(1.0-t);	vertexList[e][2]=1.0;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=(1.0-t);	(*vertexList).vertexList[e][2]=1.0;
           break;
         case 8:
           t=Interpolate(values[Cube::CornerIndex(0,0,0)]-iso,values[Cube::CornerIndex(0,0,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=0.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 9:
           t=Interpolate(values[Cube::CornerIndex(1,0,0)]-iso,values[Cube::CornerIndex(1,0,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=0.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=0.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 10:
           t=Interpolate(values[Cube::CornerIndex(1,1,0)]-iso,values[Cube::CornerIndex(1,1,1)]-iso);
-          vertexList[e][0]=1.0;		vertexList[e][1]=1.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=1.0;		(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=t;
           break;
         case 11:
           t=Interpolate(values[Cube::CornerIndex(0,1,0)]-iso,values[Cube::CornerIndex(0,1,1)]-iso);
-          vertexList[e][0]=0.0;		vertexList[e][1]=1.0;		vertexList[e][2]=t;
+          (*vertexList).vertexList[e][0]=0.0;		(*vertexList).vertexList[e][1]=1.0;		(*vertexList).vertexList[e][2]=t;
           break;
       };
     }
