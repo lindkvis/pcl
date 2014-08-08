@@ -73,6 +73,7 @@ namespace pcl
     {
       public:
         static boost::thread_specific_ptr< Allocator<MatrixEntry<T> > > AllocatorMatrixEntry;
+	      static THREAD_LOCAL bool useAllocator;
         static int UseAllocator (void);
         static void SetAllocator (const int& blockSize);
 

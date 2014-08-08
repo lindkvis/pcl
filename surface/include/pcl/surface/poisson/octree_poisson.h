@@ -120,6 +120,7 @@ namespace pcl
         static const int DepthMask,OffsetMask;
 
         static boost::thread_specific_ptr< Allocator<OctNode> > AllocatorOctNode;
+        static THREAD_LOCAL bool useAllocator;
         static int UseAllocator (void);
         static void SetAllocator (int blockSize);
 

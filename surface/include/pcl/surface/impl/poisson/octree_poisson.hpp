@@ -59,8 +59,9 @@ namespace pcl
     template<class NodeData, class Real> const int OctNode<NodeData, Real>::OffsetShift1 = DepthShift;
     template<class NodeData, class Real> const int OctNode<NodeData, Real>::OffsetShift2 = OffsetShift1 + OffsetShift;
     template<class NodeData, class Real> const int OctNode<NodeData, Real>::OffsetShift3 = OffsetShift2 + OffsetShift;
-
     template<class NodeData, class Real> boost::thread_specific_ptr< Allocator<OctNode<NodeData, Real> > > OctNode<NodeData, Real>::AllocatorOctNode;
+    template<class NodeData, class Real> THREAD_LOCAL bool OctNode<NodeData, Real>::useAllocator = false;
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class NodeData, class Real> void 
@@ -68,18 +69,21 @@ namespace pcl
     {
       if (blockSize > 0)
       {
-	      AllocatorOctNode.reset(new Allocator<OctNode<NodeData, Real> >);
+        AllocatorOctNode.reset(new Allocator<OctNode<NodeData, Real> >);
         AllocatorOctNode->set (blockSize);
+        useAllocator = true;
       }
-      else
+      else {
         AllocatorOctNode.reset();
+        useAllocator = false;
+      }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     template<class NodeData, class Real> int 
     OctNode<NodeData, Real>::UseAllocator (void)
     {
-      return (!!AllocatorOctNode.get());
+      return useAllocator;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
